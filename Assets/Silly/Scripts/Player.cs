@@ -10,13 +10,19 @@ namespace Silly
         public float maxSpeed = 2.0f;
         // 일정 속도 유지
         public float moveSpeed = 2.0f;
+        // 바닥까지의 거리
+        public float groundDistance = 0.52f;
         
         
         // 점프가해지는 힘
         public float jumpForce = 4.0f;
+        [SerializeField]
         bool isGround = false;
-        public Transform GroundCheck;
+        [SerializeField]
+        bool isJump = true;
         public LayerMask GroundLayer;
+        
+
 
         Rigidbody2D rigid;
 
@@ -24,6 +30,8 @@ namespace Silly
         float scaleX;
 
         Animator animator;
+
+
 
         // Start is called before the first frame update
         void Start()
@@ -42,13 +50,21 @@ namespace Silly
             moveInput = Input.GetAxisRaw("Horizontal");
             //Jump();
 
-            if (IsGround())
+            CheckGround();
+            if (isGround)
             {
+                
                 Jump();
+                
+                //if (this.transform.position.y < height)
+                //{
+                //    
+                //}
             }
             else
             {
                 animator.SetBool("isJump", false);
+                
             }
         }
 
@@ -77,12 +93,8 @@ namespace Silly
             //{
             //    rigid.velocity = new Vector2(-maxSpeed, rigid.velocity.y);
             //}
-        }
 
-        public void move2()
-        {
-            
-            
+
         }
 
         
@@ -90,23 +102,23 @@ namespace Silly
         void Flip()
         {
             // 첫번째 방법 flip을 사용
-            if (moveInput > 0)
-            {
-                this.GetComponent<SpriteRenderer>().flipX = false;
-            }
-            else if (moveInput < 0)
-            {
-                this.GetComponent<SpriteRenderer>().flipX = true;
-            }
-            // 두번째 방법 사이즈를 교체
             //if (moveInput > 0)
             //{
-            //    transform.localScale = new Vector3(scaleX, transform.localScale.y, transform.localScale.z);
+            //    this.GetComponent<SpriteRenderer>().flipX = false;
             //}
-            //if (moveInput < 0)
+            //else if (moveInput < 0)
             //{
-            //    transform.localScale = new Vector3((-1) * scaleX, transform.localScale.y, transform.localScale.z);
+            //    this.GetComponent<SpriteRenderer>().flipX = true;
             //}
+            // 두번째 방법 사이즈를 교체
+            if (moveInput > 0)
+            {
+                transform.localScale = new Vector3(scaleX, transform.localScale.y, transform.localScale.z);
+            }
+            if (moveInput < 0)
+            {
+                transform.localScale = new Vector3((-1) * scaleX, transform.localScale.y, transform.localScale.z);
+            }
         }
 
         void CheckMove()
@@ -136,12 +148,10 @@ namespace Silly
             // 첫번째 방법
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                //if (IsGround())
-                {
-                    rigid.velocity = new Vector2(rigid.velocity.x, jumpForce);
-                    animator.SetBool("isJump", true);
-                }
-
+                rigid.velocity = new Vector2(rigid.velocity.x, jumpForce);
+                animator.SetBool("isJump", true);
+                isJump = true;
+                isGround = false;
             }
             // 두번째 방법
             //if (Input.GetKeyDown(KeyCode.Space))
@@ -153,10 +163,60 @@ namespace Silly
             //}
         }
 
-        bool IsGround()
+        void CheckGround()
         {
-            isGround = Physics2D.OverlapCircle(GroundCheck.position, GroundCheck.GetComponent<CircleCollider2D>().radius, GroundLayer);
-            return isGround;
+            if (isJump && rigid.velocity.y < 0)
+            {
+                //RaycastHit2D raycastHit = Physics2D.Raycast(rigid.position, Vector3.down, groundDistance, LayerMask.GetMask("Ground"));
+                //if(raycastHit.collider != null)
+                //{
+                //    //Debug.Log(raycastHit.collider.name);
+                //    isGround = true;
+                //    isJump = false;
+                //}
+
+                RaycastHit2D raycastHit2D = Physics2D.BoxCast(rigid.position, Vector2.one, 0, Vector2.down, groundDistance, LayerMask.GetMask("Ground"));
+                if (raycastHit2D.collider != null)
+                {
+                    isGround = true;
+                    isJump = false;
+                }
+
+                //isGround = Physics2D.OverlapCircle(TrGround.position, TrGround.GetComponent<CircleCollider2D>().radius, GroundLayer);
+                //if (isGround)
+                //{
+                //    isJump = false;
+                //    isGround = true;
+                //}
+            }
+            
         }
+
+        private void OnDrawGizmos()
+        {
+            if (rigid == null)
+            {
+                return;
+            }
+
+            Gizmos.color = Color.green;
+
+            Gizmos.DrawLine(rigid.position, (rigid.position - new Vector2(0, groundDistance)));
+
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireCube(rigid.position,  new Vector2(1, 0.5f + groundDistance));
+        }
+
+        //private void OnTriggerEnter2D(Collider2D collision)
+        //{
+        //    if (collision.gameObject.CompareTag("Item"))
+        //    {
+        //        collision.gameObject.GetComponent<Item>().Open();
+        //    }
+        //}
+        //private void OnC
+        //{
+        //    
+        //}
     }
 }
