@@ -20,6 +20,8 @@ namespace Silly
 
         bool detectDir = false;
         public float attackDistance = 1.0f;
+        float damageForce = 5.0f;
+        bool isMove = true;
 
 
 
@@ -40,8 +42,11 @@ namespace Silly
 
         private void FixedUpdate()
         {
-            AutoMove();
-            CheckPlayer();
+            if (isMove)
+            {
+                AutoMove();
+                CheckPlayer();
+            }
         }
 
 
@@ -157,5 +162,23 @@ namespace Silly
             Gizmos.DrawWireSphere(rigid.position, 2.0f);
 
         }
+
+        public void OnDamage()
+        {
+            rigid.AddForce(Vector2.up * damageForce, ForceMode2D.Impulse);
+            isMove = false;
+            StopCoroutine("AutoDir");
+            this.GetComponent<PolygonCollider2D>().isTrigger = true;
+                
+        }
+
+        void SetMove()
+        {
+            isMove = true;
+        }
+
+
+
+
     }
 }

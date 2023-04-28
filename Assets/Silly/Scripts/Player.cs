@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SocialPlatforms;
 
 namespace Silly
 {
@@ -31,6 +32,10 @@ namespace Silly
 
         Animator animator;
 
+        // 밟았을때 액션을 위한 점프 힘
+        float TreadOnForce = 3.0f;
+
+        float damageForce = 5.0f;
 
 
         // Start is called before the first frame update
@@ -218,5 +223,41 @@ namespace Silly
         //{
         //    
         //}
+
+        private void OnCollisionEnter2D(Collision2D collision)
+        {
+            if(collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
+            {
+                if (isJump && rigid.velocity.y < 0)
+                {
+                    TredOnEnemy(collision.transform);
+                }
+                else
+                {
+
+                }
+            }
+        }
+
+        void TredOnEnemy(Transform enemy)
+        {
+
+            rigid.AddForce(Vector2.up * TreadOnForce, ForceMode2D.Impulse);
+            enemy.GetComponent<Enemy>().OnDamage();
+            enemy.GetComponent<SpriteRenderer>().flipY = true;
+
+        }
+
+        public void OnDamage()
+        {
+            rigid.AddForce(Vector2.up * damageForce, ForceMode2D.Impulse);
+            StopCoroutine("AutoDir");
+            this.GetComponent<PolygonCollider2D>().isTrigger = true;
+
+        }
+
+
+
+
     }
 }
